@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 
 @Composable
 fun AppNavigation() {
@@ -15,26 +14,20 @@ fun AppNavigation() {
         composable<Login> {
             LoginScreen(
                 onStartClick = {
-                    navController.navigate(Characters) {
+                    navController.navigate(Main) {
                         popUpTo<Login> { inclusive = true }
                     }
                 }
             )
         }
 
-        composable<Characters> {
-            CharactersScreen(
-                onCharacterClick = { id ->
-                    navController.navigate(CharacterDetail(id))
+        composable<Main> {
+            MainScreen(
+                onLogout = {
+                    navController.navigate(Login) {
+                        popUpTo<Main> { inclusive = true }
+                    }
                 }
-            )
-        }
-
-        composable<CharacterDetail> { backStackEntry ->
-            val args = backStackEntry.toRoute<CharacterDetail>()
-            CharacterDetailScreen(
-                id = args.id,
-                onBackClick = { navController.popBackStack() }
             )
         }
     }
