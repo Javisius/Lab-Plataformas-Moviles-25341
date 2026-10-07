@@ -85,10 +85,8 @@ fun MainScreen(onLogout: () -> Unit) {
                         onCharacterClick = { id -> innerNavController.navigate(CharacterDetail(id)) }
                     )
                 }
-                composable<CharacterDetail> { backStackEntry ->
-                    val args = backStackEntry.toRoute<CharacterDetail>()
+                composable<CharacterDetail> {
                     CharacterDetailScreen(
-                        id = args.id,
                         onBackClick = { innerNavController.popBackStack() }
                     )
                 }
@@ -101,10 +99,8 @@ fun MainScreen(onLogout: () -> Unit) {
                         onLocationClick = { id -> innerNavController.navigate(LocationDetail(id)) }
                     )
                 }
-                composable<LocationDetail> { backStackEntry ->
-                    val args = backStackEntry.toRoute<LocationDetail>()
+                composable<LocationDetail> {
                     LocationDetailScreen(
-                        id = args.id,
                         onBackClick = { innerNavController.popBackStack() }
                     )
                 }

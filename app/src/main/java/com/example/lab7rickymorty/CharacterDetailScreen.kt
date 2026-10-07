@@ -18,15 +18,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CharacterDetailScreen(id: Int, onBackClick: () -> Unit) {
-    val character = remember(id) { CharacterDb().getCharacterById(id) }
+fun CharacterDetailScreen(
+    onBackClick: () -> Unit,
+    viewModel: CharacterDetailViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -48,23 +53,40 @@ fun CharacterDetailScreen(id: Int, onBackClick: () -> Unit) {
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CharacterImage(url = character.image, size = 220.dp)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = character.name,
-                style = MaterialTheme.typography.titleLarge
+        when {
+            uiState.hasError -> ErrorContent(
+                modifier = Modifier.padding(innerPadding),
+                onRetryClick = { viewModel.loadCharacter() }
             )
-            Spacer(modifier = Modifier.height(24.dp))
-            DetailRow(label = "Species:", value = character.species)
-            DetailRow(label = "Status:", value = character.status)
-            DetailRow(label = "Gender:", value = character.gender)
+
+            uiState.isLoading -> LoadingContent(
+                modifier = Modifier.padding(innerPadding),
+                onClick = { viewModel.setError() }
+            )
+
+            else -> {
+                val character = uiState.data
+                if (character != null) {
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CharacterImage(url = character.image, size = 220.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = character.name,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        DetailRow(label = "Species:", value = character.species)
+                        DetailRow(label = "Status:", value = character.status)
+                        DetailRow(label = "Gender:", value = character.gender)
+                    }
+                }
+            }
         }
     }
 }
