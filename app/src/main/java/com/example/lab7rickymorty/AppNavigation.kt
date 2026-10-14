@@ -9,7 +9,22 @@ import androidx.navigation.compose.rememberNavController
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Login) {
+    NavHost(navController = navController, startDestination = Splash) {
+
+        composable<Splash> {
+            SplashScreen(
+                onLoggedIn = {
+                    navController.navigate(Main) {
+                        popUpTo<Splash> { inclusive = true }
+                    }
+                },
+                onLoggedOut = {
+                    navController.navigate(Login) {
+                        popUpTo<Splash> { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable<Login> {
             LoginScreen(

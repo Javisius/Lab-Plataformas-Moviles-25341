@@ -18,13 +18,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onLogoutClick: () -> Unit) {
+fun ProfileScreen(
+    onLogoutClick: () -> Unit,
+    viewModel: ProfileViewModel = viewModel()
+) {
+    val name by viewModel.name.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -51,10 +59,9 @@ fun ProfileScreen(onLogoutClick: () -> Unit) {
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Javier Sánchez", style = MaterialTheme.typography.titleLarge)
-            Text(text = "Carné 25341", style = MaterialTheme.typography.bodyMedium)
+            Text(text = name ?: "", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = onLogoutClick) {
+            Button(onClick = { viewModel.logout(onLogoutClick) }) {
                 Text("Cerrar sesión")
             }
         }

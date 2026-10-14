@@ -32,3 +32,6 @@ data class LocationDetail(val id: Int)
 // Profile no necesita grafo propio, es una sola pantalla
 @Serializable
 object Profile
+
+@Serializable
+object Splash

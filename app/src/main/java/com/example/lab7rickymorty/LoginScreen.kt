@@ -9,16 +9,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun LoginScreen(onStartClick: () -> Unit) {
+fun LoginScreen(
+    onStartClick: () -> Unit,
+    viewModel: LoginViewModel = viewModel()
+) {
+    var name by remember { mutableStateOf("") }
+
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier
@@ -37,20 +48,24 @@ fun LoginScreen(onStartClick: () -> Unit) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(24.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = onStartClick,
+                    onClick = {
+                        viewModel.saveNameAndContinue(name) {
+                            onStartClick()
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Empezar")
+                    Text("Iniciar sesión")
                 }
             }
-
-            Text(
-                text = "Javier Sánchez - 25341",
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp)
-            )
         }
     }
 }
