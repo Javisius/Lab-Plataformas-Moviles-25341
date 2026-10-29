@@ -1,28 +1,55 @@
 package com.example.lab7rickymorty
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class CharactersViewModel : ViewModel() {
+class CharactersViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(UiState<List<Character>>())
-    val uiState: StateFlow<UiState<List<Character>>> = _uiState.asStateFlow()
+    private val characterDao = AppDatabase.getDatabase(application).characterDao()
+
+    private val _uiState = MutableStateFlow(UiState<List<CharacterListItem>>())
+    val uiState: StateFlow<UiState<List<CharacterListItem>>> = _uiState.asStateFlow()
+
+    private val _showOnlyFavorites = MutableStateFlow(false)
+    val showOnlyFavorites: StateFlow<Boolean> = _showOnlyFavorites.asStateFlow()
+
+    private var observeJob: Job? = null
 
     init {
         loadCharacters()
     }
 
     fun loadCharacters() {
-        viewModelScope.launch {
+        observeJob?.cancel()
+        observeJob = viewModelScope.launch {
             _uiState.value = UiState(isLoading = true)
-            delay(4000)
-            val characters = CharacterDb().getAllCharacters()
-            _uiState.value = UiState(isLoading = false, data = characters)
+
+            combine(
+                characterDao.getAll(),
+                _showOnlyFavorites
+            ) { entities, onlyFavorites ->
+                val items = entities.map { it.toListItem() }
+                if (onlyFavorites) items.filter { it.isFavorite } else items
+            }.collect { filteredItems ->
+                _uiState.value = UiState(isLoading = false, data = filteredItems)
+            }
+        }
+    }
+
+    fun toggleFavoritesFilter() {
+        _showOnlyFavorites.value = !_showOnlyFavorites.value
+    }
+
+    fun toggleFavorite(id: Int, currentValue: Boolean) {
+        viewModelScope.launch {
+            characterDao.updateFavorite(id, !currentValue)
         }
     }
 

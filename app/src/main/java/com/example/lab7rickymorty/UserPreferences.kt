@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import androidx.datastore.preferences.core.Preferences
 
 val Context.dataStore by preferencesDataStore(name = "settings")
 
@@ -13,8 +14,8 @@ private val nameKey = stringPreferencesKey("name")
 
 class UserPreferences(private val context: Context) {
 
-    suspend fun saveName(name: String) {
-        context.dataStore.edit { preferences ->
+    suspend fun saveName(name: String): Preferences {
+        return context.dataStore.edit { preferences ->
             preferences[nameKey] = name
         }
     }
@@ -25,8 +26,8 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun clearName() {
-        context.dataStore.edit { preferences ->
+    suspend fun clearName(): Preferences {
+        return context.dataStore.edit { preferences ->
             preferences.remove(nameKey)
         }
     }

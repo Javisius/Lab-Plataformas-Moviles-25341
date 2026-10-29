@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel()
 ) {
     var name by remember { mutableStateOf("") }
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold { innerPadding ->
         Box(
@@ -52,6 +56,7 @@ fun LoginScreen(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Nombre") },
+                    enabled = !isLoading,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -61,9 +66,16 @@ fun LoginScreen(
                             onStartClick()
                         }
                     },
+                    enabled = !isLoading && name.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Iniciar sesión")
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text("Iniciar sesión")
+                    }
                 }
             }
         }
