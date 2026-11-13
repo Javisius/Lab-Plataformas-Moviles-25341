@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.lab7rickymorty.ui.navigation.AppNavigation
 import com.example.lab7rickymorty.ui.theme.Lab7rickymortyTheme
 
 class MainActivity : ComponentActivity() {
