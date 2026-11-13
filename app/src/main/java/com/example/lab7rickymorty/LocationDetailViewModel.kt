@@ -21,8 +21,8 @@ class LocationDetailViewModel(
 
     private val locationId: Int = savedStateHandle.toRoute<LocationDetail>().id
 
-    private val _uiState = MutableStateFlow(UiState<Location>())
-    val uiState: StateFlow<UiState<Location>> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(UiState<LocationListItem>())
+    val uiState: StateFlow<UiState<LocationListItem>> = _uiState.asStateFlow()
 
     // Las locations no se eliminan, pero si la fila no existe (p. ej. tras un logout)
     // se vuelve atrás en lugar de quedarse cargando o crashear
@@ -39,14 +39,21 @@ class LocationDetailViewModel(
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             _uiState.value = UiState(isLoading = true)
-            locationRepository.getLocationById(locationId).collect { location ->
-                if (location == null) {
+            locationRepository.getLocationById(locationId).collect { item ->
+                if (item == null) {
                     _uiState.value = UiState(isLoading = false)
                     _notFound.value = true
                 } else {
-                    _uiState.value = UiState(isLoading = false, data = location)
+                    _uiState.value = UiState(isLoading = false, data = item)
                 }
             }
+        }
+    }
+
+    fun toggleFavorite() {
+        val current = _uiState.value.data ?: return
+        viewModelScope.launch {
+            locationRepository.setFavorite(locationId, !current.isFavorite)
         }
     }
 

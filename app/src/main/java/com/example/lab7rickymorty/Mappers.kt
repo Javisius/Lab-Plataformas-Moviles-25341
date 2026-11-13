@@ -61,3 +61,12 @@ data class CharacterListItem(
 fun CharacterEntity.toListItem(): CharacterListItem {
     return CharacterListItem(character = toModel(), isFavorite = isFavorite)
 }
+
+data class LocationListItem(
+    val location: Location,
+    val isFavorite: Boolean
+)
+
+fun LocationEntity.toListItem(): LocationListItem {
+    return LocationListItem(location = toModel(), isFavorite = isFavorite)
+}

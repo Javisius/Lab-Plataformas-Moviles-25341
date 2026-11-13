@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [CharacterEntity::class, LocationEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,7 +25,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "lab7rickymorty_database"
-                ).build()
+                )
+                    // v1 -> v2 agrega isFavorite a locations. Como los datos se vuelven a
+                    // descargar en el login, es aceptable borrar las tablas en lugar de migrar.
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

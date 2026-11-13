@@ -75,8 +75,11 @@ fun CharactersScreen(
 
             else -> {
                 val items = uiState.data ?: emptyList()
-                if (items.isEmpty() && showOnlyFavorites) {
-                    EmptyFavoritesContent(modifier = Modifier.padding(innerPadding))
+                if (items.isEmpty()) {
+                    EmptyContent(
+                        message = if (showOnlyFavorites) "No hay favoritos para mostrar" else "No hay personajes para mostrar",
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 } else {
                     LazyColumn(modifier = Modifier.padding(innerPadding)) {
                         items(items, key = { it.character.id }) { item ->
@@ -120,14 +123,19 @@ fun CharactersScreen(
     }
 }
 
+// Vista de "no hay elementos", compartida por las listas de personajes y locations
 @Composable
-fun EmptyFavoritesContent(modifier: Modifier = Modifier) {
+fun EmptyContent(message: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("No hay favoritos para mostrar")
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
