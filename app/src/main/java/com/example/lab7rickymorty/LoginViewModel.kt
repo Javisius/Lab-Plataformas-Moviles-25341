@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -49,9 +50,18 @@ class LoginViewModel(
                     errorMessage = "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
                 )
             } catch (e: HttpException) {
-                // El servidor respondió, pero con un código de error (404, 500...)
+                // El servidor respondió, pero con un código de error
+                val message = if (e.code() == 429) {
+                    // 429 Too Many Requests: el API limita cuántas peticiones acepta por IP
+                    "El servidor limitó las peticiones. Cambia de red o inténtalo más tarde."
+                } else {
+                    "El servidor respondió con un error (${e.code()}). Inténtalo de nuevo."
+                }
+                _uiState.value = LoginUiState(errorMessage = message)
+            } catch (e: SerializationException) {
+                // La respuesta llegó, pero el JSON no tiene la forma que esperan los DTOs
                 _uiState.value = LoginUiState(
-                    errorMessage = "El servidor respondió con un error (${e.code()}). Inténtalo de nuevo."
+                    errorMessage = "La respuesta del servidor no tiene el formato esperado. Inténtalo de nuevo."
                 )
             }
         }
