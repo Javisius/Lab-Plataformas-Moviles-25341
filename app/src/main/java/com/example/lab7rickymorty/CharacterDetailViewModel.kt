@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CharacterDetailViewModel(
@@ -20,29 +22,45 @@ class CharacterDetailViewModel(
     private val characterId: Int = savedStateHandle.toRoute<CharacterDetail>().id
 
     private val _uiState = MutableStateFlow(UiState<CharacterListItem>())
-    val uiState: StateFlow<UiState<CharacterListItem>> = _uiState
+    val uiState: StateFlow<UiState<CharacterListItem>> = _uiState.asStateFlow()
+
+    // true cuando el personaje ya no existe en Room: la pantalla vuelve a la lista
+    private val _notFound = MutableStateFlow(false)
+    val notFound: StateFlow<Boolean> = _notFound.asStateFlow()
+
+    private var observeJob: Job? = null
 
     init {
         loadCharacter()
     }
 
+    // Observa Room: cualquier cambio en la fila (favorito, edición, borrado)
+    // llega aquí automáticamente, sin recargar a mano
     fun loadCharacter() {
-        viewModelScope.launch {
+        observeJob?.cancel()
+        observeJob = viewModelScope.launch {
             _uiState.value = UiState(isLoading = true)
-            val item = characterRepository.getCharacterById(characterId)
-            _uiState.value = UiState(isLoading = false, data = item)
+            characterRepository.getCharacterById(characterId).collect { item ->
+                if (item == null) {
+                    _uiState.value = UiState(isLoading = false)
+                    _notFound.value = true
+                } else {
+                    _uiState.value = UiState(isLoading = false, data = item)
+                }
+            }
         }
     }
 
     fun toggleFavorite() {
+        val current = _uiState.value.data ?: return
         viewModelScope.launch {
-            val current = _uiState.value.data ?: return@launch
             characterRepository.setFavorite(characterId, !current.isFavorite)
-            loadCharacter()
         }
     }
 
     fun setError() {
+        // Se deja de observar para que una nueva emisión no tape el error
+        observeJob?.cancel()
         _uiState.value = _uiState.value.copy(isLoading = false, hasError = true)
     }
 

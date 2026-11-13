@@ -15,8 +15,10 @@ interface CharacterDao {
     @Query("SELECT * FROM characters")
     fun getAll(): Flow<List<CharacterEntity>>
 
+    // Flow + nullable: Room vuelve a emitir cada vez que cambia la fila,
+    // y emite null si la fila ya no existe (por ejemplo, si se eliminó)
     @Query("SELECT * FROM characters WHERE id = :id")
-    suspend fun getById(id: Int): CharacterEntity
+    fun getById(id: Int): Flow<CharacterEntity?>
 
     @Query("SELECT * FROM characters WHERE isFavorite = 1")
     fun getFavorites(): Flow<List<CharacterEntity>>

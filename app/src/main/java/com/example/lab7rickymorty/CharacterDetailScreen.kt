@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,6 +35,15 @@ fun CharacterDetailScreen(
     viewModel: CharacterDetailViewModel = viewModel(factory = CharacterDetailViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val notFound by viewModel.notFound.collectAsState()
+
+    // Si el registro desaparece de Room, se vuelve a la lista.
+    // Esta es la ÚNICA fuente que navega hacia atrás cuando el registro ya no existe.
+    LaunchedEffect(notFound) {
+        if (notFound) {
+            onBackClick()
+        }
+    }
 
     Scaffold(
         topBar = {

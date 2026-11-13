@@ -14,8 +14,8 @@ class CharacterRepository(
         return characterDao.getAll().map { entities -> entities.map { it.toListItem() } }
     }
 
-    suspend fun getCharacterById(id: Int): CharacterListItem {
-        return characterDao.getById(id).toListItem()
+    fun getCharacterById(id: Int): Flow<CharacterListItem?> {
+        return characterDao.getById(id).map { entity -> entity?.toListItem() }
     }
 
     suspend fun setFavorite(id: Int, isFavorite: Boolean) {

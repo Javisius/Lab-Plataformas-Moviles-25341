@@ -86,8 +86,10 @@ fun MainScreen(onLogout: () -> Unit) {
                     )
                 }
                 composable<CharacterDetail> {
+                    // Se saca solo el CharacterDetail de la pila: si se llama dos veces,
+                    // la segunda no encuentra el destino y no hace nada (no saca la lista)
                     CharacterDetailScreen(
-                        onBackClick = { innerNavController.popBackStack() }
+                        onBackClick = { innerNavController.popBackStack<CharacterDetail>(inclusive = true) }
                     )
                 }
             }
@@ -100,8 +102,10 @@ fun MainScreen(onLogout: () -> Unit) {
                     )
                 }
                 composable<LocationDetail> {
+                    // Se saca solo el LocationDetail de la pila: si se llama dos veces,
+                    // la segunda no encuentra el destino y no hace nada (no saca la lista)
                     LocationDetailScreen(
-                        onBackClick = { innerNavController.popBackStack() }
+                        onBackClick = { innerNavController.popBackStack<LocationDetail>(inclusive = true) }
                     )
                 }
             }

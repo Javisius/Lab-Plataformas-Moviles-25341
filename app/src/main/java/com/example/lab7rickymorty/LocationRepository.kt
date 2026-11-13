@@ -12,8 +12,8 @@ class LocationRepository(
         return locationDao.getAll().map { entities -> entities.map { it.toModel() } }
     }
 
-    suspend fun getLocationById(id: Int): Location {
-        return locationDao.getById(id).toModel()
+    fun getLocationById(id: Int): Flow<Location?> {
+        return locationDao.getById(id).map { entity -> entity?.toModel() }
     }
 
     // Igual que en CharacterRepository: todas las páginas, solo si la tabla está vacía
