@@ -55,6 +55,7 @@ class CharactersViewModel(
     }
 
     fun setError() {
+        observeJob?.cancel()
         _uiState.value = _uiState.value.copy(isLoading = false, hasError = true)
     }
 

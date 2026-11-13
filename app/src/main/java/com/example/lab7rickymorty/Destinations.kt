@@ -19,6 +19,10 @@ object CharactersList
 @Serializable
 data class CharacterDetail(val id: Int)
 
+// Mismo formulario para crear (id = null) y editar (id = personaje a editar)
+@Serializable
+data class CharacterForm(val id: Int? = null)
+
 // Grafo anidado de Locations (vive dentro de Main)
 @Serializable
 object LocationsGraph

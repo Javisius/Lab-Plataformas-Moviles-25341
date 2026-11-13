@@ -58,6 +58,14 @@ class CharacterDetailViewModel(
         }
     }
 
+    // Solo borra en Room. NO navega: al desaparecer la fila, el Flow emite null,
+    // se marca notFound y la pantalla vuelve atrás (una sola fuente de navegación)
+    fun deleteCharacter() {
+        viewModelScope.launch {
+            characterRepository.deleteCharacter(characterId)
+        }
+    }
+
     fun setError() {
         // Se deja de observar para que una nueva emisión no tape el error
         observeJob?.cancel()

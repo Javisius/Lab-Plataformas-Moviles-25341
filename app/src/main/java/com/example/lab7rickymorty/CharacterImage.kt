@@ -1,7 +1,9 @@
 package com.example.lab7rickymorty
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,5 +20,7 @@ fun CharacterImage(url: String, size: Dp, modifier: Modifier = Modifier) {
         modifier = modifier
             .size(size)
             .clip(CircleShape)
+            // Fondo visible si la URL está vacía o no carga (p. ej. personajes creados sin imagen)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     )
 }

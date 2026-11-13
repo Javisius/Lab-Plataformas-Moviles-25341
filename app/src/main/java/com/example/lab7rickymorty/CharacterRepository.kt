@@ -22,6 +22,32 @@ class CharacterRepository(
         characterDao.updateFavorite(id, isFavorite)
     }
 
+    // CRUD local: el API es de solo lectura, todos estos cambios existen solo en Room
+
+    // El id que trae el Character se ignora: se genera uno que no choque con los del API
+    suspend fun createCharacter(character: Character): Int {
+        val maxId = characterDao.getMaxId() ?: 0
+        val newId = maxOf(maxId, LOCAL_ID_START) + 1
+        characterDao.insert(character.copy(id = newId).toEntity())
+        return newId
+    }
+
+    suspend fun updateCharacter(character: Character) {
+        characterDao.updateData(
+            id = character.id,
+            name = character.name,
+            status = character.status,
+            species = character.species,
+            gender = character.gender,
+            image = character.image
+        )
+    }
+
+    // Sirve igual para personajes creados localmente y para los que vinieron del API
+    suspend fun deleteCharacter(id: Int) {
+        characterDao.deleteById(id)
+    }
+
     // Descarga TODAS las páginas siguiendo info.next y las guarda en Room,
     // solo si la tabla está vacía (así nunca se duplica ni se pisan cambios locales)
     suspend fun syncIfEmpty() {
@@ -44,5 +70,11 @@ class CharacterRepository(
 
     suspend fun clearAll() {
         characterDao.deleteAll()
+    }
+
+    companion object {
+        // Los ids del API van de 1 a ~826. Los personajes creados en la app empiezan
+        // después de 1_000_000, así nunca chocan con un id del API
+        const val LOCAL_ID_START = 1_000_000
     }
 }

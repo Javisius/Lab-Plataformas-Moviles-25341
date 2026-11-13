@@ -82,14 +82,21 @@ fun MainScreen(onLogout: () -> Unit) {
             navigation<CharactersGraph>(startDestination = CharactersList) {
                 composable<CharactersList> {
                     CharactersScreen(
-                        onCharacterClick = { id -> innerNavController.navigate(CharacterDetail(id)) }
+                        onCharacterClick = { id -> innerNavController.navigate(CharacterDetail(id)) },
+                        onAddClick = { innerNavController.navigate(CharacterForm()) }
                     )
                 }
                 composable<CharacterDetail> {
                     // Se saca solo el CharacterDetail de la pila: si se llama dos veces,
                     // la segunda no encuentra el destino y no hace nada (no saca la lista)
                     CharacterDetailScreen(
-                        onBackClick = { innerNavController.popBackStack<CharacterDetail>(inclusive = true) }
+                        onBackClick = { innerNavController.popBackStack<CharacterDetail>(inclusive = true) },
+                        onEditClick = { id -> innerNavController.navigate(CharacterForm(id)) }
+                    )
+                }
+                composable<CharacterForm> {
+                    CharacterFormScreen(
+                        onBackClick = { innerNavController.popBackStack<CharacterForm>(inclusive = true) }
                     )
                 }
             }

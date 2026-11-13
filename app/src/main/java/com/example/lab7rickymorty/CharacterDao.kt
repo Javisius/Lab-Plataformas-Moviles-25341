@@ -26,6 +26,31 @@ interface CharacterDao {
     @Query("UPDATE characters SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: Int, isFavorite: Boolean): Int
 
+    // ABORT: un personaje nuevo nunca debe reemplazar a uno existente
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(character: CharacterEntity): Long
+
+    // UPDATE de solo los campos editables: isFavorite se conserva tal cual
+    @Query(
+        "UPDATE characters SET name = :name, status = :status, species = :species, " +
+            "gender = :gender, image = :image WHERE id = :id"
+    )
+    suspend fun updateData(
+        id: Int,
+        name: String,
+        status: String,
+        species: String,
+        gender: String,
+        image: String
+    ): Int
+
+    @Query("DELETE FROM characters WHERE id = :id")
+    suspend fun deleteById(id: Int): Int
+
+    // null si la tabla está vacía
+    @Query("SELECT MAX(id) FROM characters")
+    suspend fun getMaxId(): Int?
+
     @Query("SELECT COUNT(*) FROM characters")
     suspend fun count(): Int
 
