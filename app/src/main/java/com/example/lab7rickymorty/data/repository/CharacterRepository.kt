@@ -3,7 +3,6 @@ package com.example.lab7rickymorty.data.repository
 import com.example.lab7rickymorty.data.local.CharacterDao
 import com.example.lab7rickymorty.data.mapper.toEntity
 import com.example.lab7rickymorty.data.mapper.toListItem
-import com.example.lab7rickymorty.data.remote.CharacterDto
 import com.example.lab7rickymorty.data.remote.RickAndMortyApiService
 import com.example.lab7rickymorty.model.Character
 import com.example.lab7rickymorty.model.CharacterListItem
@@ -55,23 +54,20 @@ class CharacterRepository(
         characterDao.deleteById(id)
     }
 
-    // Descarga TODAS las páginas siguiendo info.next y las guarda en Room,
-    // solo si la tabla está vacía (así nunca se duplica ni se pisan cambios locales)
+    // Descarga TODOS los personajes (ver fetchAllRecords: página 1 + un request por ids,
+    // o páginas como respaldo) y los guarda en Room, solo si la tabla está vacía
+    // (así nunca se duplica ni se pisan cambios locales)
     suspend fun syncIfEmpty() {
         if (characterDao.count() > 0) return
 
-        val allCharacters = mutableListOf<CharacterDto>()
-        var page = apiService.getCharacters()
-        allCharacters += page.results
+        val allCharacters = fetchAllRecords(
+            resource = "character",
+            firstPage = { apiService.getCharacters() },
+            byIds = { ids -> apiService.getCharactersByIds(ids) },
+            nextPage = { url -> apiService.getCharactersPage(url) }
+        )
 
-        var nextUrl = page.info.next
-        while (nextUrl != null) {
-            page = apiService.getCharactersPage(nextUrl)
-            allCharacters += page.results
-            nextUrl = page.info.next
-        }
-
-        // Se inserta todo al final: si falla una página a la mitad, no queda nada a medias
+        // Se inserta todo al final: si falla una petición a la mitad, no queda nada a medias
         characterDao.insertAll(allCharacters.map { it.toEntity() })
     }
 
