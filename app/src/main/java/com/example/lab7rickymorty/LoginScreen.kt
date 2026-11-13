@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -32,7 +36,16 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
 ) {
     var name by remember { mutableStateOf("") }
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val isLoading = uiState.isLoading
+
+    // Se navega solo cuando el ViewModel confirma que la sincronización terminó bien.
+    // Al ser un estado (y no un callback), funciona aunque la pantalla se recree a mitad de la carga.
+    LaunchedEffect(uiState.isLoggedIn) {
+        if (uiState.isLoggedIn) {
+            onStartClick()
+        }
+    }
 
     Scaffold { innerPadding ->
         Box(
@@ -61,11 +74,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = {
-                        viewModel.saveNameAndContinue(name) {
-                            onStartClick()
-                        }
-                    },
+                    onClick = { viewModel.login(name) },
                     enabled = !isLoading && name.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -75,6 +84,22 @@ fun LoginScreen(
                         )
                     } else {
                         Text("Iniciar sesión")
+                    }
+                }
+                uiState.errorMessage?.let { message ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { viewModel.login(name) },
+                        enabled = name.isNotBlank()
+                    ) {
+                        Text("Reintentar")
                     }
                 }
             }

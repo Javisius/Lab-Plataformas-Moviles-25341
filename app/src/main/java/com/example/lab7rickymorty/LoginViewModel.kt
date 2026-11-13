@@ -9,6 +9,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+
+// Estado propio del login: además de cargando/éxito necesita el texto del error
+data class LoginUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isLoggedIn: Boolean = false
+)
 
 class LoginViewModel(
     private val userPreferences: UserPreferences,
@@ -16,19 +25,35 @@ class LoginViewModel(
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun saveNameAndContinue(name: String, onDone: () -> Unit) {
+    // Se usa tanto para "Iniciar sesión" como para "Reintentar"
+    fun login(name: String) {
+        if (_uiState.value.isLoading) return
+
         viewModelScope.launch {
-            _isLoading.value = true
+            _uiState.value = LoginUiState(isLoading = true)
 
-            userPreferences.saveName(name)
-            characterRepository.syncIfEmpty()
-            locationRepository.syncIfEmpty()
+            try {
+                // Primero los datos: si cualquiera falla, salta al catch
+                // y el nombre NO se guarda (la sesión no queda iniciada)
+                characterRepository.syncIfEmpty()
+                locationRepository.syncIfEmpty()
 
-            _isLoading.value = false
-            onDone()
+                userPreferences.saveName(name.trim())
+                _uiState.value = LoginUiState(isLoggedIn = true)
+            } catch (e: IOException) {
+                // Sin internet, DNS que no resuelve, timeout...
+                _uiState.value = LoginUiState(
+                    errorMessage = "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+                )
+            } catch (e: HttpException) {
+                // El servidor respondió, pero con un código de error (404, 500...)
+                _uiState.value = LoginUiState(
+                    errorMessage = "El servidor respondió con un error (${e.code()}). Inténtalo de nuevo."
+                )
+            }
         }
     }
 
