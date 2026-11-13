@@ -37,7 +37,7 @@ import androidx.compose.material3.CircularProgressIndicator
 @Composable
 fun CharactersScreen(
     onCharacterClick: (Int) -> Unit,
-    viewModel: CharactersViewModel = viewModel()
+    viewModel: CharactersViewModel = viewModel(factory = CharactersViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val showOnlyFavorites by viewModel.showOnlyFavorites.collectAsState()

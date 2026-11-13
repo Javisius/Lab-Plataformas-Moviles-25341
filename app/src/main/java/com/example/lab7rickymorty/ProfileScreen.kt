@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun ProfileScreen(
     onLogoutClick: () -> Unit,
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
 ) {
     val name by viewModel.name.collectAsState()
 

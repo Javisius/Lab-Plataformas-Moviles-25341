@@ -1,8 +1,10 @@
 package com.example.lab7rickymorty
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,9 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class CharactersViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val characterDao = AppDatabase.getDatabase(application).characterDao()
+class CharactersViewModel(
+    private val characterRepository: CharacterRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState<List<CharacterListItem>>())
     val uiState: StateFlow<UiState<List<CharacterListItem>>> = _uiState.asStateFlow()
@@ -32,10 +34,9 @@ class CharactersViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.value = UiState(isLoading = true)
 
             combine(
-                characterDao.getAll(),
+                characterRepository.getCharacters(),
                 _showOnlyFavorites
-            ) { entities, onlyFavorites ->
-                val items = entities.map { it.toListItem() }
+            ) { items, onlyFavorites ->
                 if (onlyFavorites) items.filter { it.isFavorite } else items
             }.collect { filteredItems ->
                 _uiState.value = UiState(isLoading = false, data = filteredItems)
@@ -49,11 +50,19 @@ class CharactersViewModel(application: Application) : AndroidViewModel(applicati
 
     fun toggleFavorite(id: Int, currentValue: Boolean) {
         viewModelScope.launch {
-            characterDao.updateFavorite(id, !currentValue)
+            characterRepository.setFavorite(id, !currentValue)
         }
     }
 
     fun setError() {
         _uiState.value = _uiState.value.copy(isLoading = false, hasError = true)
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                CharactersViewModel(appContainer().characterRepository)
+            }
+        }
     }
 }

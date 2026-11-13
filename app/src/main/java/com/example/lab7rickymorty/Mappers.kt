@@ -53,15 +53,6 @@ fun Character.toEntity(): CharacterEntity {
     )
 }
 
-fun Location.toEntity(): LocationEntity {
-    return LocationEntity(
-        id = id,
-        name = name,
-        type = type,
-        dimension = dimension
-    )
-}
-
 data class CharacterListItem(
     val character: Character,
     val isFavorite: Boolean

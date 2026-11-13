@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun LocationDetailScreen(
     onBackClick: () -> Unit,
-    viewModel: LocationDetailViewModel = viewModel()
+    viewModel: LocationDetailViewModel = viewModel(factory = LocationDetailViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

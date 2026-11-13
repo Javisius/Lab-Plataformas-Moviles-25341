@@ -1,19 +1,20 @@
 package com.example.lab7rickymorty
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userPreferences = UserPreferences(application)
-    private val database = AppDatabase.getDatabase(application)
-    private val characterDao = database.characterDao()
-    private val locationDao = database.locationDao()
+class ProfileViewModel(
+    private val userPreferences: UserPreferences,
+    private val characterRepository: CharacterRepository,
+    private val locationRepository: LocationRepository
+) : ViewModel() {
 
     val name: StateFlow<String?> = userPreferences.getName()
         .stateIn(
@@ -25,9 +26,22 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun logout(onDone: () -> Unit) {
         viewModelScope.launch {
             userPreferences.clearName()
-            characterDao.deleteAll()
-            locationDao.deleteAll()
+            characterRepository.clearAll()
+            locationRepository.clearAll()
             onDone()
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val container = appContainer()
+                ProfileViewModel(
+                    userPreferences = container.userPreferences,
+                    characterRepository = container.characterRepository,
+                    locationRepository = container.locationRepository
+                )
+            }
         }
     }
 }

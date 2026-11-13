@@ -31,7 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun CharacterDetailScreen(
     onBackClick: () -> Unit,
-    viewModel: CharacterDetailViewModel = viewModel()
+    viewModel: CharacterDetailViewModel = viewModel(factory = CharacterDetailViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

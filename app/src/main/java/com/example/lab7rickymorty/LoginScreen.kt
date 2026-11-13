@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun LoginScreen(
     onStartClick: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
 ) {
     var name by remember { mutableStateOf("") }
     val isLoading by viewModel.isLoading.collectAsState()

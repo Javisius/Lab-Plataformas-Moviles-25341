@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun SplashScreen(
     onLoggedIn: () -> Unit,
     onLoggedOut: () -> Unit,
-    viewModel: SplashViewModel = viewModel()
+    viewModel: SplashViewModel = viewModel(factory = SplashViewModel.Factory)
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
 
